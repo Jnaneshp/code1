@@ -1,70 +1,39 @@
-import { useState } from 'react'; 
- 
-const App = () => { 
-  const [count, setCount] = useState(0); // Counter state 
-  const [step, setStep] = useState(1); // Step value 
- 
-  // Increase Counter 
-  const increase = () => setCount(count + step); 
- 
-  // Decrease Counter (Prevent below 0) 
-  const decrease = () => setCount(count - step >= 0 ? count - step : 0); 
- 
-  // Reset Counter 
-  const reset = () => setCount(0); 
- 
-  return ( 
-    <div style={styles.container}> 
-      <h1>Counter Application</h1> 
-      <h2>Counter Value: {count}</h2> 
- 
-      {/* Step Input */} 
-      <div> 
-        <label>Step Value: </label> 
-        <input  
-          type="number"  
-          value={step}  
-          onChange={(e) => setStep(Number(e.target.value))} 
-          style={styles.input} 
-        /> 
-      </div> 
- 
-      {/* Buttons */} 
-      <div> 
-        <button onClick={increase} style={styles.button}>Increase</button> 
-        <button onClick={decrease} style={styles.button}>Decrease</button> 
-        <button onClick={reset} style={styles.resetButton}>Reset</button> 
-      </div> 
-    </div> 
-  ); 
-}; 
- 
-// Inline Styles 
-const styles = { 
-  container: { 
-    textAlign: 'center', 
-    fontFamily: 'Arial, sans-serif', 
-    marginTop: '50px', 
-  }, 
-  button: { 
-    margin: '10px', 
-    padding: '10px 20px', 
-    fontSize: '16px', 
-    cursor: 'pointer', 
-  }, 
-  resetButton: { 
-    margin: '10px', 
-    padding: '10px 20px', 
-    fontSize: '16px', 
-    cursor: 'pointer', 
-    backgroundColor: 'red', 
-    color: 'white', 
-  }, 
-  input: { 
-    marginLeft: '10px', 
-    padding: '5px', 
-    fontSize: '16px', 
-  }, 
-}; 
- 
-export default App;
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+import matplotlib.pyplot as plt
+
+data = pd.read_csv(r'E:\Machine_learning_lab\WBCD.csv')
+
+data = data.drop(columns=[col for col in data.columns if 'Unnamed' in col or col == 'id'])
+
+
+X = data.drop('diagnosis', axis=1)  
+y = data['diagnosis']               
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+
+clf = DecisionTreeClassifier(criterion='gini', random_state=42)
+clf.fit(X_train, y_train)
+
+accuracy = clf.score(X_test, y_test)
+print(f"Model Accuracy on Test Data: {accuracy:.2f}")
+
+
+plt.figure(figsize=(20,10))
+plot_tree(clf, feature_names=X.columns, class_names=['Benign', 'Malignant'], filled=True)
+plt.show()
+
+
+import numpy as np
+
+
+new_sample_array = np.array([[14.5, 20.5, 95.5, 640, 0.1, 0.2, 0.3, 0.15, 0.25, 0.07,
+                              0.2, 0.6, 2.3, 30, 0.006, 0.05, 0.05, 0.02, 0.02, 0.004,
+                              16, 30, 100, 800, 0.14, 0.35, 0.45, 0.2, 0.3, 0.08]])
+
+new_sample_df = pd.DataFrame(new_sample_array, columns=X.columns)
+
+prediction = clf.predict(new_sample_df)
+print(f"The predicted diagnosis for the new sample is: {prediction[0]}")
