@@ -1,21 +1,36 @@
-import  { useState } from 'react'; 
-import './App.css'; 
- 
-function App() { 
-  const [text, setText] = useState(''); 
- 
-  return ( 
-    <div className="App" > 
-      <input  
-        type="text"  
-        placeholder="Type something..."  
-        value={text}  
-        onChange={(e) => setText(e.target.value)}  
-      /> 
-      <h1>{text}</h1> 
-      <p>Character Count: {text.length}</p> 
-    </div> 
-  ); 
-} 
- 
-export default App;
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.stats import gaussian_kde
+
+def locally_weighted_regression(x_train, y_train, x_test, tau):
+    distances = np.array([np.abs(x_test - x) for x in x_train])
+    weights = np.exp(-(distances**2)/(2*(tau**2)))
+    x = np.array([np.ones_like(x_train), x_train]).T
+    w = np.diag(weights)
+    beta = np.linalg.inv(x.T @ w @ x) @ x.T @ w @ y_train
+    y_pred = beta[0] + beta[1]*x_test
+    return y_pred, beta
+
+x_train = np.array([5, 1, 2, 1])
+y_train = np.array([25, 5, 7, 8])
+x_test_points = np.linspace(min(x_train), max(x_train), num=50)
+tau = 0.4
+
+lwr_y_pred = []
+for x_test in x_test_points:
+    y_pred,_ = locally_weighted_regression(x_train, y_train, x_test, tau)
+    lwr_y_pred.append(y_pred) 
+
+x_train_std = np.array([np.ones_like(x_train), x_train]).T
+beta_std = np.linalg.inv(x_train_std.T @ x_train_std) @ x_train_std.T @ y_train
+std_y_pred = lambda x: beta_std[0] + beta_std[1] * x
+std_y_pred_points = std_y_pred(x_test_points)
+
+plt.figure()
+plt.title("Comparision of LWR and standard Linear Regression")
+plt.scatter(x_train, y_train, color='blue', label="Training Data")
+plt.plot(x_test_points, lwr_y_pred, color='red', label="LWR Predictions")
+plt.plot(x_test_points, std_y_pred_points, color='green', label="Standard Linear Regression")
+
+plt.legend()
+plt.show()
