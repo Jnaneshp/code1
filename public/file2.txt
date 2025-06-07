@@ -1,48 +1,77 @@
-import Header from './Header'; 
-import Footer from './Footer'; 
- 
-const App = () => { 
-  return ( 
-    <div style={{ textAlign: 'center' }}> 
-      <Header title="React Props Demo" /> 
-      <main> 
-        <h2>Welcome to the React Props Example!</h2> 
-        <p>This demonstrates passing props from parent to child components.</p> 
-      </main> 
-      <Footer copyright="© 2025 MyReactApp. All rights reserved." /> 
-    </div> 
-  ); 
-}; 
- 
-export default App; 
- 
-Header.jsx file  
- 
- 
-import PropTypes from 'prop-types'; 
- 
-const Header = ({ title }) => { 
-  return ( 
-    <header> 
-      <h1>{title}</h1> 
-    </header> 
-  ); 
-}; 
- 
-Header.propTypes = { 
-title: PropTypes.string.isRequired, 
-}; 
-export default Header; 
-Footer.jsx 
-import PropTypes from 'prop-types'; 
-const Footer = ({ copyright }) => { 
-return ( 
-<footer> 
-<p>{copyright}</p> 
-</footer> 
-); 
-}; 
-Footer.propTypes = { 
-copyright: PropTypes.string.isRequired, 
-}; 
-export default Footer;
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error, r2_score
+from sklearn.pipeline import make_pipeline
+
+ import warnings
+ warnings.filterwarnings('ignore')
+
+boston_df = pd.read_csv(r"BostonHousing_exp-7.csv")
+x_boston = boston_df[['RM']]
+y_boston = boston_df['MEDV']
+
+x_train, x_test, y_train, y_test = train_test_split(x_boston, y_boston, test_size=0.2, random_state=32)
+
+lr = LinearRegression()
+lr.fit(x_train, y_train)
+y_pred = lr.predict(x_test)
+
+print(f"Intercept:{lr.intercept_:.2f}")
+print(f"Coefficients:{lr.coef_[0]:.2f}")
+print(f"R^2 score:{r2_score(y_test, y_pred):.2f}")
+print(f"Mean squared error:{mean_squared_error(y_test, y_pred):.2f}")
+
+plt.figure(figsize=(6, 4))
+plt.scatter(x_test, y_test, color='blue', label='Actual')
+plt.plot(x_test, y_pred, color='red', label='Predicted')
+plt.xlabel('Average number of rooms [RM]')
+plt.ylabel('House price (in $1000s)')
+plt.title('Linear Regression on Boston Housing Data')
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+
+//part 2
+
+auto_df = pd.read_csv("auto-mpg.csv")
+
+
+auto_df['horsepower'] = auto_df['horsepower'].replace('?', np.nan)     
+auto_df['horsepower'] = pd.to_numeric(auto_df['horsepower'])           
+auto_df.dropna(subset=['horsepower', 'mpg'], inplace=True)             
+
+
+X_auto = auto_df[['horsepower']]
+y_auto = auto_df['mpg']
+
+
+X_train, X_test, y_train, y_test = train_test_split(X_auto, y_auto, test_size=0.2, random_state=2005)
+
+degree = 2
+poly_model = make_pipeline(PolynomialFeatures(degree), LinearRegression())
+poly_model.fit(X_train, y_train)
+y_pred_poly = poly_model.predict(X_test)
+
+
+print("\n=== Polynomial Regression on Auto MPG Dataset ===")
+print(f"RÂ² Score: {r2_score(y_test, y_pred_poly):.2f}")
+print(f"MSE: {mean_squared_error(y_test, y_pred_poly):.2f}")
+
+
+X_plot = np.linspace(X_auto['horsepower'].min(), X_auto['horsepower'].max(), 100).reshape(-1, 1)
+y_plot = poly_model.predict(X_plot)
+
+plt.figure(figsize=(6, 4))
+plt.scatter(X_auto, y_auto, alpha=0.4, label='Actual')
+plt.plot(X_plot, y_plot, color='red', linewidth=2, label=f'Degree {degree} Fit')
+plt.xlabel("Horsepower")
+plt.ylabel("MPG")
+plt.title("Polynomial Regression: Auto MPG")
+plt.legend()
+plt.tight_layout()
+plt.show()
